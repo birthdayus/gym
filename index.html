@@ -166,6 +166,32 @@ input,textarea,button{font-family:var(--f)}
 .confirm-txt{font-size:12px;color:var(--tx2);margin-bottom:10px;line-height:1.55;font-family:var(--fm)}
 .confirm-btns{display:flex;gap:8px}
 .cbtn-sm{flex:1;padding:9px;border-radius:var(--r);font-size:12px;font-weight:700;cursor:pointer;font-family:var(--f);border:none;text-transform:uppercase;letter-spacing:.04em}
+
+/* ─── TIMER ─── */
+.timer-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.92);backdrop-filter:blur(8px);z-index:600;display:none;flex-direction:column;align-items:center;justify-content:center}
+.timer-overlay.open{display:flex}
+.timer-title{font-size:13px;font-weight:700;letter-spacing:0.10em;text-transform:uppercase;color:var(--tx3);margin-bottom:6px;font-family:var(--fm)}
+.timer-set{font-size:11px;color:var(--tx2);margin-bottom:28px;font-family:var(--fm)}
+.timer-ring{position:relative;width:200px;height:200px;margin-bottom:28px}
+.timer-ring svg{position:absolute;inset:0;transform:rotate(-90deg)}
+.timer-ring-bg{fill:none;stroke:var(--bg3);stroke-width:8}
+.timer-ring-prog{fill:none;stroke:var(--g);stroke-width:8;stroke-linecap:round;transition:stroke-dashoffset 1s linear;stroke-dasharray:565}
+.timer-ring.danger .timer-ring-prog{stroke:var(--red)}
+.timer-num{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column}
+.timer-secs{font-size:58px;font-weight:700;color:var(--tx);line-height:1;letter-spacing:-0.03em}
+.timer-label{font-size:11px;color:var(--tx3);margin-top:4px;font-family:var(--fm)}
+.timer-btns{display:flex;gap:12px}
+.tbtn{width:72px;height:72px;border-radius:50%;border:none;font-size:22px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s;font-family:var(--f)}
+.tbtn-main{background:var(--g);color:#000}
+.tbtn-main:hover{background:var(--gd)}
+.tbtn-skip{background:var(--bg3);color:var(--tx2);border:0.5px solid var(--bd2)}
+.tbtn-skip:hover{background:var(--bg4)}
+.timer-done-msg{font-size:18px;font-weight:700;color:var(--g);margin-top:20px;opacity:0;transition:opacity .3s;font-family:var(--f)}
+.timer-done-msg.show{opacity:1}
+.timer-presets{display:flex;gap:8px;margin-bottom:20px}
+.tpreset{padding:7px 14px;border-radius:20px;border:0.5px solid var(--bd2);background:none;color:var(--tx3);font-size:12px;cursor:pointer;font-family:var(--fm);transition:all .15s}
+.tpreset.active{background:var(--g);color:#000;border-color:var(--g);font-weight:700}
+.tpreset:hover:not(.active){border-color:var(--tx3)}
 </style>
 </head>
 <body>
@@ -345,7 +371,7 @@ const EXERCISES = {
   b6:{name:'Renegade Row',target:'3 × 8 each side',muscles:['Back','Biceps'],secondary:['Core','Shoulders'],
     steps:['平板支撐姿勢，雙手各握一個DB（並排站穩）','一隻手將DB拉向腰側，另一手撐穩','保持臀部不旋轉，核心收緊','交替左右，每邊各8次算一組'],
     mistake:'臀部唔好旋轉擺動！這是最常見錯誤。必要時用較輕DB，確保核心夠穩定。',type:'pull'},
-  c1:{name:'Plank',target:'4 × 45–60 sec',muscles:['Core','Transverse Abs'],secondary:['Shoulders','Glutes'],
+  c1:{name:'Plank',target:'4 × 45–60 sec',timer:60,muscles:['Core','Transverse Abs'],secondary:['Shoulders','Glutes'],
     steps:['前臂撐地，手肘正下於肩膊，腳趾撐地','收緊臀部 + 腹部（想象肚臍向脊椎靠攏）','頭頸脊背成一直線，頭唔要垂下或仰高','全程保持正常呼吸，唔要閉氣'],
     mistake:'唔好讓臀部下塌或者撅起！塌腰係最傷腰且無效的姿勢。從側面照鏡確認。',type:'core'},
   c2:{name:'Leg Raises',target:'3 × 15 reps',muscles:['Lower Abs','Hip Flexors'],secondary:['Core'],
@@ -453,9 +479,11 @@ function renderToday(){
     const ex=EXERCISES[eid];
     const isDone=sess.exDone.includes(eid);
     const wrap=document.createElement('div');wrap.className='exwrap';
+    const hasTimer=!!ex.timer;
     wrap.innerHTML=`<div class="exrow${isDone?' done':''}" data-id="${eid}">
       <div class="excheck">${isDone?'✓':''}</div>
       <div class="exinfo"><div class="exname">${ex.name}</div><div class="extarget">${ex.target}</div></div>
+      ${hasTimer?`<button class="ex-guide-btn" style="background:rgba(200,240,96,0.10);border-color:rgba(200,240,96,0.35);color:var(--g)" data-eid="${eid}" title="Timer" data-timer>⏱</button>`:''}
       <button class="ex-guide-btn" data-eid="${eid}" title="How to">?</button>
     </div>`;
     wrap.querySelector('.exrow').addEventListener('click',function(e){
@@ -464,7 +492,11 @@ function renderToday(){
       if(idx>-1)sess.exDone.splice(idx,1);else sess.exDone.push(eid);
       sv('sess',sessions);renderToday();
     });
-    wrap.querySelector('.ex-guide-btn').onclick=(e)=>{e.stopPropagation();openModal(eid);};
+    wrap.querySelectorAll('.ex-guide-btn').forEach(btn=>{
+      btn.onclick=(e)=>{e.stopPropagation();
+        if(btn.dataset.timer!==undefined)openTimer(ex.name,4,ex.timer||45);
+        else openModal(eid);};
+    });
     list.appendChild(wrap);
   });
 
@@ -658,7 +690,118 @@ let touchY=0;
 document.querySelector('.modal').addEventListener('touchstart',e=>touchY=e.touches[0].clientY);
 document.querySelector('.modal').addEventListener('touchmove',e=>{if(e.touches[0].clientY-touchY>60)closeModal();});
 
+// ── TIMER ──
+let timerState={dur:45,rem:45,running:false,interval:null,set:1,totalSets:4,exName:'Plank'};
+const CIRCUM=565; // 2π×90
+
+function openTimer(exName,totalSets,defaultDur){
+  timerState={dur:defaultDur||45,rem:defaultDur||45,running:false,interval:null,set:1,totalSets:totalSets||4,exName};
+  document.getElementById('timer-exname').textContent=exName;
+  document.getElementById('timer-overlay').classList.add('open');
+  document.getElementById('timer-done-msg').classList.remove('show');
+  document.body.style.overflow='hidden';
+  // set active preset
+  document.querySelectorAll('.tpreset').forEach(b=>{
+    b.classList.toggle('active',+b.dataset.sec===(defaultDur||45));
+  });
+  updateTimerUI();
+}
+function closeTimer(){
+  if(timerState.interval)clearInterval(timerState.interval);
+  timerState.running=false;
+  document.getElementById('timer-overlay').classList.remove('open');
+  document.body.style.overflow='';
+}
+function setTimerDuration(sec){
+  if(timerState.running)return;
+  timerState.dur=sec;timerState.rem=sec;
+  document.querySelectorAll('.tpreset').forEach(b=>b.classList.toggle('active',+b.dataset.sec===sec));
+  updateTimerUI();
+}
+function toggleTimer(){
+  if(timerState.running){
+    clearInterval(timerState.interval);timerState.running=false;
+    document.getElementById('tbtn-play').textContent='▶';
+  } else {
+    if(timerState.rem<=0){nextSet();return;}
+    timerState.running=true;
+    document.getElementById('tbtn-play').textContent='⏸';
+    document.getElementById('timer-done-msg').classList.remove('show');
+    timerState.interval=setInterval(()=>{
+      timerState.rem--;
+      updateTimerUI();
+      if(timerState.rem<=0){
+        clearInterval(timerState.interval);timerState.running=false;
+        document.getElementById('tbtn-play').textContent='▶';
+        document.getElementById('timer-done-msg').classList.add('show');
+        // vibrate if supported
+        if(navigator.vibrate)navigator.vibrate([200,100,200]);
+        document.getElementById('timer-sublabel').textContent='set '+timerState.set+' done!';
+      }
+    },1000);
+  }
+}
+function resetTimer(){
+  if(timerState.interval)clearInterval(timerState.interval);
+  timerState.running=false;timerState.rem=timerState.dur;
+  document.getElementById('tbtn-play').textContent='▶';
+  document.getElementById('timer-done-msg').classList.remove('show');
+  updateTimerUI();
+}
+function nextSet(){
+  if(timerState.set<timerState.totalSets){
+    timerState.set++;timerState.rem=timerState.dur;
+    document.getElementById('timer-done-msg').classList.remove('show');
+    document.getElementById('tbtn-play').textContent='▶';
+    updateTimerUI();
+    // brief vibrate between sets
+    if(navigator.vibrate)navigator.vibrate(100);
+  } else {
+    closeTimer();
+  }
+}
+function updateTimerUI(){
+  const rem=timerState.rem,dur=timerState.dur;
+  document.getElementById('timer-secs').textContent=rem;
+  document.getElementById('timer-setlabel').textContent='Set '+timerState.set+' of '+timerState.totalSets;
+  const pct=rem/dur;
+  const offset=CIRCUM*(1-pct);
+  document.getElementById('timer-prog').style.strokeDashoffset=offset;
+  document.getElementById('timer-ring').classList.toggle('danger',rem<=10);
+  if(timerState.running)document.getElementById('timer-sublabel').textContent='';
+  else if(rem===dur)document.getElementById('timer-sublabel').textContent='tap ▶ to start';
+}
+
 renderToday();renderLog();renderProgress();renderPlan();
 </script>
+
+<!-- ─── TIMER ─── -->
+<div class="timer-overlay" id="timer-overlay">
+  <div class="timer-title" id="timer-exname">Plank</div>
+  <div class="timer-set" id="timer-setlabel">Set 1 of 4</div>
+  <div class="timer-presets">
+    <button class="tpreset" data-sec="30" onclick="setTimerDuration(30)">30s</button>
+    <button class="tpreset active" data-sec="45" onclick="setTimerDuration(45)">45s</button>
+    <button class="tpreset" data-sec="60" onclick="setTimerDuration(60)">60s</button>
+    <button class="tpreset" data-sec="90" onclick="setTimerDuration(90)">90s</button>
+  </div>
+  <div class="timer-ring" id="timer-ring">
+    <svg viewBox="0 0 200 200" width="200" height="200">
+      <circle class="timer-ring-bg" cx="100" cy="100" r="90"/>
+      <circle class="timer-ring-prog" id="timer-prog" cx="100" cy="100" r="90"/>
+    </svg>
+    <div class="timer-num">
+      <span class="timer-secs" id="timer-secs">45</span>
+      <span class="timer-label" id="timer-sublabel">tap ▶ to start</span>
+    </div>
+  </div>
+  <div class="timer-btns">
+    <button class="tbtn tbtn-skip" id="tbtn-reset" onclick="resetTimer()" title="Reset">↺</button>
+    <button class="tbtn tbtn-main" id="tbtn-play" onclick="toggleTimer()">▶</button>
+    <button class="tbtn tbtn-skip" onclick="closeTimer()" title="Close">✕</button>
+  </div>
+  <div class="timer-done-msg" id="timer-done-msg">✓ Set complete!</div>
+</div>
+
 </body>
 </html>
