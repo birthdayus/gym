@@ -213,7 +213,7 @@ input,textarea,button{font-family:var(--f)}
         <div class="hdayl" id="cur-date">—</div>
         <div class="hdayl" id="next-info" style="display:none;color:var(--g);margin-top:3px"></div>
       </div>
-      <div><div id="day-badge" class="hbadge rest">—</div></div>
+      <div style="text-align:right"><div id="day-badge" class="hbadge rest">—</div><div id="phase-pill" style="margin-top:5px;font-size:10px;color:var(--g);font-family:var(--fm)"></div></div>
     </div>
     <div class="hstats">
       <div class="hst"><span class="hstn" id="stat-streak">0</span><span class="hstl">Streak</span></div>
@@ -335,63 +335,87 @@ input,textarea,button{font-family:var(--f)}
 <script>
 // ── EXERCISE DATA ──
 const EXERCISES = {
-  a1:{name:'Push Ups',target:'4 × 15–20 reps',muscles:['Chest','Shoulders','Triceps'],secondary:['Core'],
+  // ── DAY A: Push ──
+  a1:{name:'Push Ups',muscles:['Chest','Shoulders','Triceps'],secondary:['Core'],
+    prog:[{s:3,r:12,u:'reps'},{s:4,r:15,u:'reps'},{s:4,r:20,u:'reps'},{s:5,r:20,u:'reps',note:'→ 加 weight vest 或慢降5s'}],
     steps:['雙手比膊頭略寬，全腳趾或膝蓋著地','下降時3秒 — 上去時爆發力，唔好鎖死手肘','全程保持腰板挺直，唔好塌腰或者撅臀','胸口幾乎掂到地先算full range'],
-    mistake:'唔好匆忙。慢落快上 (3:1節奏) 係關鍵。如果做唔夠15個，可以先做膝蓋版本。',type:'push'},
-  a2:{name:'DB Floor Press',target:'3 × 12 reps',muscles:['Chest','Front Delts'],secondary:['Triceps'],
-    steps:['仰臥地板，膝蓋彎曲，DB置於胸口兩側','手肘成45度角（唔係垂直），緩緩放低','手肘輕觸地板後即刻向上推，頂部擠壓胸肌1秒','比bench press更安全，適合家中練習'],
+    mistake:'唔好匆忙。慢落快上 (3:1節奏) 係關鍵。',type:'push'},
+  a2:{name:'DB Floor Press',muscles:['Chest','Front Delts'],secondary:['Triceps'],
+    prog:[{s:3,r:10,u:'reps'},{s:3,r:12,u:'reps'},{s:4,r:12,u:'reps'},{s:4,r:15,u:'reps',note:'→ 考慮加重'}],
+    steps:['仰臥地板，膝蓋彎曲，DB置於胸口兩側','手肘成45度角，緩緩放低','手肘輕觸地板後即刻向上推，頂部擠壓胸肌1秒','比bench press更安全，適合家中練習'],
     mistake:'唔好讓手肘完全放鬆落地 — 輕觸即推，保持張力。',type:'push'},
-  a3:{name:'DB Shoulder Press',target:'3 × 12 reps',muscles:['Shoulders','Front Delts'],secondary:['Triceps'],
-    steps:['坐或企立，DB置於耳朵高度，手肘成90度','垂直向上推，頂部唔完全鎖死手肘','控制地落回起始位置（唔好讓gravity做晒工）','全程保持腰板不過度後弓'],
+  a3:{name:'DB Shoulder Press',muscles:['Shoulders','Front Delts'],secondary:['Triceps'],
+    prog:[{s:3,r:10,u:'reps'},{s:3,r:12,u:'reps'},{s:4,r:12,u:'reps'},{s:4,r:15,u:'reps',note:'→ 考慮加重'}],
+    steps:['坐或企立，DB置於耳朵高度，手肘成90度','垂直向上推，頂部唔完全鎖死手肘','控制地落回起始位置','全程保持腰板不過度後弓'],
     mistake:'唔好聳肩。肩膊保持壓低，用三角肌前束發力。',type:'push'},
-  a4:{name:'Lateral Raise',target:'3 × 15 reps',muscles:['Side Delts'],secondary:['Traps'],
-    steps:['站立，DB置於身側，手肘微微彎曲（約10–15度）','以手肘帶動，將雙臂緩緩提升至肩膊高度（T字形）','頂部稍停 0.5秒，感受側三角肌收縮','控制落下，全程不要用反彈借力'],
-    mistake:'唔好用重量！Lateral Raise係孤立動作，10–15kg已經好重。用身體擺動係cheating。',type:'push'},
-  a5:{name:'Diamond Push Ups',target:'3 × 10 reps',muscles:['Inner Chest','Triceps'],secondary:['Front Delts'],
-    steps:['雙手合攏置於胸口正下方，拇指和食指形成菱形','身體保持一直線，緩緩下降直至鼻子近手掌','上臂緊貼身體兩側（唔好外張）','爆發力推上，頂部擠壓三頭肌'],
-    mistake:'唔好讓手肘外張。保持手肘指向腳的方向，確保三頭肌受力。',type:'push'},
-  a6:{name:'Tricep Overhead Ext.',target:'3 × 15 reps',muscles:['Triceps (Long head)'],secondary:[],
+  a4:{name:'Lateral Raise',muscles:['Side Delts'],secondary:['Traps'],
+    prog:[{s:3,r:12,u:'reps'},{s:3,r:15,u:'reps'},{s:4,r:15,u:'reps'},{s:4,r:20,u:'reps',note:'→ 加重 or 慢降3s'}],
+    steps:['站立，DB置於身側，手肘微微彎曲','以手肘帶動，將雙臂緩緩提升至肩膊高度','頂部稍停 0.5秒，感受側三角肌收縮','控制落下，全程不要用反彈借力'],
+    mistake:'唔好用身體擺動借力。用重量唔係重點。',type:'push'},
+  a5:{name:'Diamond Push Ups',muscles:['Inner Chest','Triceps'],secondary:['Front Delts'],
+    prog:[{s:3,r:8,u:'reps'},{s:3,r:10,u:'reps'},{s:4,r:10,u:'reps'},{s:4,r:15,u:'reps'}],
+    steps:['雙手合攏置於胸口正下方，拇指和食指形成菱形','身體保持一直線，緩緩下降直至鼻子近手掌','上臂緊貼身體兩側','爆發力推上，頂部擠壓三頭肌'],
+    mistake:'唔好讓手肘外張。保持手肘指向腳的方向。',type:'push'},
+  a6:{name:'Tricep Overhead Ext.',muscles:['Triceps (Long head)'],secondary:[],
+    prog:[{s:3,r:12,u:'reps'},{s:3,r:15,u:'reps'},{s:4,r:15,u:'reps'},{s:4,r:20,u:'reps',note:'→ 考慮加重'}],
     steps:['坐或企立，雙手握一個DB置於頭頂','手肘緊貼頭部兩側，緩緩將DB落至後腦位置','用三頭肌發力伸直手臂，頂部完全伸展','全程保持手肘固定，唔好讓其外張'],
-    mistake:'手肘唔好向外飛。呢個動作專門鍛鍊三頭肌長頭，對手臂整體圍度影響最大。',type:'push'},
-  b1:{name:'DB Bent-over Row',target:'4 × 12 reps',muscles:['Upper Back','Lats'],secondary:['Biceps','Rear Delts'],
-    steps:['腰前傾約45度，背部打直（唔係弓背），DB垂吊','將DB向肚臍方向拉，手肘貼近身體','頂部擠壓背部1秒，充分感受肌肉收縮','緩緩下放，全程保持腰背挺直'],
-    mistake:'唔好弓腰！背部一定要保持中立位置。如有腰痛可改為單臂版本，另一手扶椅。',type:'pull'},
-  b2:{name:'DB Bicep Curl',target:'3 × 12 reps',muscles:['Biceps'],secondary:['Forearms'],
+    mistake:'手肘唔好向外飛。三頭肌長頭，對手臂整體圍度影響最大。',type:'push'},
+
+  // ── DAY B: Pull ──
+  b1:{name:'DB Bent-over Row',muscles:['Upper Back','Lats'],secondary:['Biceps','Rear Delts'],
+    prog:[{s:3,r:10,u:'reps'},{s:4,r:10,u:'reps'},{s:4,r:12,u:'reps'},{s:4,r:15,u:'reps',note:'→ 考慮加重'}],
+    steps:['腰前傾約45度，背部打直，DB垂吊','將DB向肚臍方向拉，手肘貼近身體','頂部擠壓背部1秒','緩緩下放，全程保持腰背挺直'],
+    mistake:'唔好弓腰！如有腰痛可改為單臂版本。',type:'pull'},
+  b2:{name:'DB Bicep Curl',muscles:['Biceps'],secondary:['Forearms'],
+    prog:[{s:3,r:10,u:'reps'},{s:3,r:12,u:'reps'},{s:4,r:12,u:'reps'},{s:4,r:15,u:'reps',note:'→ 考慮加重'}],
     steps:['站立，DB自然垂於身側，手心向前','以手肘為軸，將DB向上捲至肩膊高度','頂部擠壓二頭肌，停留0.5秒','用3秒緩緩下放（離心收縮最重要！）'],
-    mistake:'唔好借助身體擺動。手肘必須固定於身側。下放嗰段要慢，係最有效鍛鍊嘅部分。',type:'pull'},
-  b3:{name:'Hammer Curl',target:'3 × 12 reps',muscles:['Brachialis','Biceps'],secondary:['Forearms'],
-    steps:['與Bicep Curl姿勢相同，但手心向內（中立握法）','動作完全一樣，保持拇指朝上','全程手腕保持中立，唔好旋轉','比普通Curl更針對肱肌，令手臂更厚實'],
-    mistake:'唔好在頂部旋轉手腕。中立握法全程保持，唔係捲到頂才轉。',type:'pull'},
-  b4:{name:'Rear Delt Fly',target:'3 × 15 reps',muscles:['Rear Delts'],secondary:['Upper Back','Rhomboids'],
-    steps:['腰前傾約90度（或坐在椅邊前傾），DB垂下','雙臂微彎，向兩側打開至與地面平行','頂部擠壓後三角肌，感受肩胛骨收攏','極輕重量，控制全程'],
-    mistake:'呢個係令膊頭圓潤立體嘅關鍵動作！但好多人忽略。用極輕重量（5kg已夠），重質不重量。',type:'pull'},
-  b5:{name:'DB Shrug',target:'3 × 15 reps',muscles:['Traps'],secondary:['Neck'],
-    steps:['站立，DB置於兩側，握法自然','直接向上聳起肩膊（唔係前後轉圈）','頂部停留1–2秒，充分收縮斜方肌','緩緩下放至最低位置感受拉伸'],
-    mistake:'唔好轉動肩膊！純粹上下運動。轉圈對頸部有損傷風險。',type:'pull'},
-  b6:{name:'Renegade Row',target:'3 × 8 each side',muscles:['Back','Biceps'],secondary:['Core','Shoulders'],
-    steps:['平板支撐姿勢，雙手各握一個DB（並排站穩）','一隻手將DB拉向腰側，另一手撐穩','保持臀部不旋轉，核心收緊','交替左右，每邊各8次算一組'],
-    mistake:'臀部唔好旋轉擺動！這是最常見錯誤。必要時用較輕DB，確保核心夠穩定。',type:'pull'},
-  c1:{name:'Plank',target:'4 × 45–60 sec',timer:60,muscles:['Core','Transverse Abs'],secondary:['Shoulders','Glutes'],
-    steps:['前臂撐地，手肘正下於肩膊，腳趾撐地','收緊臀部 + 腹部（想象肚臍向脊椎靠攏）','頭頸脊背成一直線，頭唔要垂下或仰高','全程保持正常呼吸，唔要閉氣'],
-    mistake:'唔好讓臀部下塌或者撅起！塌腰係最傷腰且無效的姿勢。從側面照鏡確認。',type:'core'},
-  c2:{name:'Leg Raises',target:'3 × 15 reps',muscles:['Lower Abs','Hip Flexors'],secondary:['Core'],
-    steps:['仰臥，手置於臀部兩側或墊在腰下','雙腿伸直（或微彎），緩緩上升至垂直地面','控制地下放，腳跟距離地面約5cm時再上升','全程下背壓緊地板，唔要弓腰'],
-    mistake:'唔好讓腳後跟完全放下！保持下腹持續張力。這才是針對下腹的關鍵。',type:'core'},
-  c3:{name:'Bicycle Crunches',target:'3 × 20 reps',muscles:['Obliques','Abs'],secondary:['Hip Flexors'],
-    steps:['仰臥，雙手輕放耳側（唔要拉頸）','抬起肩膊，一腳伸直，另一腳屈膝向胸','扭轉上身讓對角手肘碰屈膝腿','緩慢交替，每次完全扭轉，唔要急'],
-    mistake:'唔要拉頸！手只輕放耳旁，扭轉靠腹部，動作寧慢勿快。一組20個需要至少30秒。',type:'core'},
-  c4:{name:'DB Squat',target:'4 × 20 reps',muscles:['Quads','Glutes'],secondary:['Hamstrings','Core'],
-    steps:['DB置於肩膊或goblet式（雙手托一個DB於胸前）','腳距比膊頭略寬，腳尖微微外轉','下蹲直至大腿平行地面或以下（全蹲更好）','腳跟全程著地，膝蓋指向腳尖方向'],
-    mistake:'膝蓋唔好向內收塌！應跟腳尖方向。初學者先做自重，確保姿勢正確再加重量。',type:'core'},
-  c5:{name:'Reverse Lunge',target:'3 × 12 each',muscles:['Quads','Glutes'],secondary:['Hamstrings','Balance'],
-    steps:['站立，核心收緊，雙手持DB（或自重）','一腳向後大步踏出，後膝接近地面','前腳膝蓋保持在腳踝正上方（唔超出腳尖）','用前腳發力推回站立，完成一次'],
-    mistake:'Reverse lunge比forward lunge對膝蓋更友善，適合跑步者。後退那一步要夠大。',type:'core'},
-  c6:{name:'Calf Raise',target:'3 × 30 reps',muscles:['Calves','Gastrocnemius'],secondary:['Soleus'],
-    steps:['站在台階邊緣（腳尖踩著，腳跟懸空），或平地亦可','緩緩踮起腳尖至最高點，頂部停留1秒','控制地下放，讓腳跟低於台階邊緣（全ROM）','手扶牆保持平衡，可單腳做增加強度'],
-    mistake:'唔要快！小腿肌耐力訓練，30次要15–20秒完成。頂部一定要完全收縮。',type:'core'},
-  c7:{name:'Mountain Climbers',target:'3 × 20 reps',muscles:['Core','Hip Flexors'],secondary:['Shoulders','Cardio'],
-    steps:['平板支撐姿勢，手臂打直，核心收緊','快速交替將膝蓋拉向胸口','臀部保持水平，唔要上下起伏','節奏盡量快，是有氧+核心的複合動作'],
-    mistake:'唔要讓臀部升高！保持平板支撐的挺直身體。速度快但姿勢唔能妥協。',type:'core'}
+    mistake:'唔好借助身體擺動。下放嗰段要慢。',type:'pull'},
+  b3:{name:'Hammer Curl',muscles:['Brachialis','Biceps'],secondary:['Forearms'],
+    prog:[{s:3,r:10,u:'reps'},{s:3,r:12,u:'reps'},{s:4,r:12,u:'reps'},{s:4,r:15,u:'reps'}],
+    steps:['與Bicep Curl姿勢相同，但手心向內（中立握法）','全程手腕保持中立，唔好旋轉','比普通Curl更針對肱肌，令手臂更厚實'],
+    mistake:'唔好在頂部旋轉手腕。中立握法全程保持。',type:'pull'},
+  b4:{name:'Rear Delt Fly',muscles:['Rear Delts'],secondary:['Upper Back','Rhomboids'],
+    prog:[{s:3,r:12,u:'reps'},{s:3,r:15,u:'reps'},{s:4,r:15,u:'reps'},{s:4,r:20,u:'reps'}],
+    steps:['腰前傾約90度，DB垂下','雙臂微彎，向兩側打開至與地面平行','頂部擠壓後三角肌','極輕重量，控制全程'],
+    mistake:'呢個令膊頭圓潤立體嘅關鍵動作！輕重量重質量。',type:'pull'},
+  b5:{name:'DB Shrug',muscles:['Traps'],secondary:['Neck'],
+    prog:[{s:3,r:12,u:'reps'},{s:3,r:15,u:'reps'},{s:4,r:15,u:'reps'},{s:4,r:20,u:'reps',note:'→ 考慮加重'}],
+    steps:['站立，DB置於兩側','直接向上聳起肩膊（唔係前後轉圈）','頂部停留1–2秒','緩緩下放至最低位置'],
+    mistake:'唔好轉動肩膊！純粹上下運動。',type:'pull'},
+  b6:{name:'Renegade Row',muscles:['Back','Biceps'],secondary:['Core','Shoulders'],
+    prog:[{s:3,r:6,u:'each'},{s:3,r:8,u:'each'},{s:4,r:8,u:'each'},{s:4,r:10,u:'each',note:'→ 考慮加重'}],
+    steps:['平板支撐姿勢，雙手各握一個DB','一隻手將DB拉向腰側，另一手撐穩','保持臀部不旋轉，核心收緊','交替左右，每邊各算一次'],
+    mistake:'臀部唔好旋轉擺動！必要時用較輕DB。',type:'pull'},
+
+  // ── DAY C: Core + Legs ──
+  c1:{name:'Plank',muscles:['Core','Transverse Abs'],secondary:['Shoulders','Glutes'],
+    prog:[{s:3,sec:45,u:'sec'},{s:4,sec:45,u:'sec'},{s:4,sec:60,u:'sec'},{s:4,sec:75,u:'sec',note:'→ 加 weight plate on back'}],
+    steps:['前臂撐地，手肘正下於肩膊，腳趾撐地','收緊臀部 + 腹部（肚臍向脊椎靠攏）','頭頸脊背成一直線，保持正常呼吸','唔好閉氣！呼吸係保持長時間嘅關鍵'],
+    mistake:'唔好讓臀部下塌或者撅起！從側面照鏡確認。',type:'core'},
+  c2:{name:'Leg Raises',muscles:['Lower Abs','Hip Flexors'],secondary:['Core'],
+    prog:[{s:3,r:12,u:'reps'},{s:3,r:15,u:'reps'},{s:4,r:15,u:'reps'},{s:4,r:20,u:'reps',note:'→ 加ankle weight'}],
+    steps:['仰臥，手置於臀部兩側','雙腿伸直，緩緩上升至垂直地面','控制地下放，腳跟距離地面約5cm時再上升','全程下背壓緊地板'],
+    mistake:'唔好讓腳後跟完全放下！保持下腹持續張力。',type:'core'},
+  c3:{name:'Bicycle Crunches',muscles:['Obliques','Abs'],secondary:['Hip Flexors'],
+    prog:[{s:3,r:15,u:'reps'},{s:3,r:20,u:'reps'},{s:4,r:20,u:'reps'},{s:4,r:25,u:'reps'}],
+    steps:['仰臥，雙手輕放耳側','抬起肩膊，一腳伸直，另一腳屈膝向胸','扭轉上身讓對角手肘碰屈膝腿','緩慢交替，每次完全扭轉'],
+    mistake:'唔要拉頸！扭轉靠腹部，動作寧慢勿快。',type:'core'},
+  c4:{name:'DB Squat',muscles:['Quads','Glutes'],secondary:['Hamstrings','Core'],
+    prog:[{s:3,r:15,u:'reps'},{s:4,r:15,u:'reps'},{s:4,r:20,u:'reps'},{s:5,r:20,u:'reps',note:'→ 考慮加重'}],
+    steps:['DB置於肩膊或goblet式（雙手托一個DB於胸前）','腳距比膊頭略寬，腳尖微微外轉','下蹲直至大腿平行地面或以下','腳跟全程著地，膝蓋指向腳尖'],
+    mistake:'膝蓋唔好向內收塌！先做自重確保姿勢正確。',type:'core'},
+  c5:{name:'Reverse Lunge',muscles:['Quads','Glutes'],secondary:['Hamstrings','Balance'],
+    prog:[{s:3,r:10,u:'each'},{s:3,r:12,u:'each'},{s:4,r:12,u:'each'},{s:4,r:15,u:'each',note:'→ 考慮加重'}],
+    steps:['站立，核心收緊，雙手持DB','一腳向後大步踏出，後膝接近地面','前腳膝蓋保持在腳踝正上方','用前腳發力推回站立'],
+    mistake:'Reverse lunge比forward lunge對膝蓋更友善。後退那一步要夠大。',type:'core'},
+  c6:{name:'Calf Raise',muscles:['Calves','Gastrocnemius'],secondary:['Soleus'],
+    prog:[{s:3,r:20,u:'reps'},{s:3,r:25,u:'reps'},{s:4,r:25,u:'reps'},{s:4,r:30,u:'reps',note:'→ 單腳版本'}],
+    steps:['站在台階邊緣，腳尖踩著，腳跟懸空','緩緩踮起腳尖至最高點，頂部停留1秒','控制地下放，讓腳跟低於台階邊緣','手扶牆保持平衡，可單腳做'],
+    mistake:'唔要快！頂部一定要完全收縮。',type:'core'},
+  c7:{name:'Mountain Climbers',muscles:['Core','Hip Flexors'],secondary:['Shoulders','Cardio'],
+    prog:[{s:3,r:15,u:'reps'},{s:3,r:20,u:'reps'},{s:4,r:20,u:'reps'},{s:4,r:25,u:'reps'}],
+    steps:['平板支撐姿勢，手臂打直，核心收緊','快速交替將膝蓋拉向胸口','臀部保持水平，唔要上下起伏','節奏盡量快'],
+    mistake:'唔要讓臀部升高！速度快但姿勢唔能妥協。',type:'core'}
 };
 
 // ── WORKOUT PLAN ──// ── WORKOUT PLAN ──
@@ -407,6 +431,22 @@ function sv(k,v){try{localStorage.setItem('gv2_'+k,JSON.stringify(v));}catch(e){
 
 const _today0 = new Date(); _today0.setHours(0,0,0,0);
 let startDate = ld('start') ? new Date(ld('start')) : _today0;
+
+// ── PHASE (Elvis: already 9 weeks in, phases are longer) ──
+function getWeekNum(){return Math.floor(Math.round((TODAY()-startDate)/(864e5))/7)+1;}
+function getPhase(){const w=getWeekNum();return w<=4?1:w<=8?2:w<=16?3:4;}
+function phaseLabel(){const p=getPhase(),w=getWeekNum();
+  return p===1?'Week '+w+' · 打基礎':p===2?'Week '+w+' · 加量':p===3?'Week '+w+' · 中階':' Week '+w+' · 進階';}
+function getTarget(ex){
+  const p=getPhase()-1,pg=ex.prog?ex.prog[Math.min(p,ex.prog.length-1)]:null;
+  if(!pg)return ex.target||'—';
+  if(pg.sec!==undefined)return pg.s+' × '+pg.sec+' '+pg.u+(pg.note?' '+pg.note:'');
+  return pg.s+' × '+pg.r+' '+pg.u+(pg.note?' '+pg.note:'');
+}
+function getTimerSec(ex){
+  const p=getPhase()-1,pg=ex.prog?ex.prog[Math.min(p,ex.prog.length-1)]:null;
+  return pg&&pg.sec?pg.sec:(ex.timer||45);
+}
 let sessions  = ld('sess') || {};
 let weights   = ld('wts')  || [];
 let notes     = ld('notes')|| '';
@@ -479,10 +519,10 @@ function renderToday(){
     const ex=EXERCISES[eid];
     const isDone=sess.exDone.includes(eid);
     const wrap=document.createElement('div');wrap.className='exwrap';
-    const hasTimer=!!ex.timer;
+    const hasTimer=ex.prog?ex.prog[0].sec!==undefined:!!ex.timer;
     wrap.innerHTML=`<div class="exrow${isDone?' done':''}" data-id="${eid}">
       <div class="excheck">${isDone?'✓':''}</div>
-      <div class="exinfo"><div class="exname">${ex.name}</div><div class="extarget">${ex.target}</div></div>
+      <div class="exinfo"><div class="exname">${ex.name}</div><div class="extarget">${getTarget(ex)}</div></div>
       ${hasTimer?`<button class="ex-guide-btn" style="background:rgba(200,240,96,0.10);border-color:rgba(200,240,96,0.35);color:var(--g)" data-eid="${eid}" title="Timer" data-timer>⏱</button>`:''}
       <button class="ex-guide-btn" data-eid="${eid}" title="How to">?</button>
     </div>`;
@@ -494,7 +534,7 @@ function renderToday(){
     });
     wrap.querySelectorAll('.ex-guide-btn').forEach(btn=>{
       btn.onclick=(e)=>{e.stopPropagation();
-        if(btn.dataset.timer!==undefined)openTimer(ex.name,4,ex.timer||45);
+        if(btn.dataset.timer!==undefined)openTimer(ex.name,ex.prog?ex.prog[Math.min(getPhase()-1,ex.prog.length-1)].s||4:4,getTimerSec(ex));
         else openModal(eid);};
     });
     list.appendChild(wrap);
@@ -670,7 +710,14 @@ function renderPlan(){
     W.exercises.forEach(eid=>{
       const ex=EXERCISES[eid];
       const r=document.createElement('div');r.className='ppex';
-      r.innerHTML=`<span class="ppex-name">${ex.name}</span><span class="ppex-target">${ex.target}</span><button class="ppex-btn" data-eid="${eid}">?</button>`;
+      const curP=getPhase()-1;
+      const pgRows=(ex.prog||[]).map((p,i)=>{
+        const lbl=['W1-4','W5-8','W9-16','M4+'][i];
+        const val=p.sec!==undefined?p.s+'×'+p.sec+'s':p.s+'×'+p.r+' '+p.u;
+        const isCur=i===Math.min(curP,ex.prog.length-1);
+        return `<span style="font-size:9px;padding:2px 5px;border-radius:10px;font-family:var(--fm);${isCur?'background:var(--g);color:#000;font-weight:700':'color:var(--tx3)'}">${lbl}: ${val}</span>`;
+      }).join('');
+      r.innerHTML=`<div style="flex:1"><div class="ppex-name">${ex.name}</div><div style="display:flex;flex-wrap:wrap;gap:3px;margin-top:4px">${pgRows}</div></div><button class="ppex-btn" data-eid="${eid}">?</button>`;
       r.querySelector('.ppex-btn').onclick=e=>{e.stopPropagation();openModal(eid);};
       container.appendChild(r);
     });
