@@ -549,7 +549,7 @@ function renderToday(){
     wrap.innerHTML=`<div class="exrow${isDone?' done':isSkipped?' skipped':''}" data-id="${eid}">
       <div class="excheck">${isDone?'✓':''}</div>
       <div class="exinfo"><div class="exname">${ex.name}</div><div class="extarget">${getTarget(ex)}</div></div>
-      ${hasTimer&&!isSkipped?`<button class="ex-guide-btn" style="background:rgba(200,240,96,0.10);border-color:rgba(200,240,96,0.35);color:var(--g)" data-eid="${eid}" title="Timer" data-timer>⏱</button>`:''}
+      ${(hasTimer&&!isSkipped)?('<button class="ex-guide-btn" style="background:rgba(200,240,96,0.10);border-color:rgba(200,240,96,0.35);color:var(--g)" data-eid="'+eid+'" title="Timer" data-timer>⏱</button>'):''}
       <button class="skip-btn${isSkipped?' active':''}" data-eid="${eid}" title="Skip (injured/unable)" data-skip>傷</button>
       <button class="ex-guide-btn" data-eid="${eid}" title="How to">?</button>
     </div>`;
@@ -561,16 +561,18 @@ function renderToday(){
       sv('sess',sessions);renderToday();
     });
     wrap.querySelectorAll('.skip-btn').forEach(btn=>{
-      btn.onclick=(e)=>{e.stopPropagation();
+      function doSkip(e){
+        e.stopPropagation();e.preventDefault();
         if(!sess.exSkipped)sess.exSkipped=[];
         const si=sess.exSkipped.indexOf(eid);
         if(si>-1){sess.exSkipped.splice(si,1);}else{
           sess.exSkipped.push(eid);
-          // also un-done it
           const di=sess.exDone.indexOf(eid);if(di>-1)sess.exDone.splice(di,1);
         }
         sv('sess',sessions);renderToday();
-      };
+      }
+      btn.addEventListener('click',doSkip);
+      btn.addEventListener('touchend',doSkip,{passive:false});
     });
     wrap.querySelectorAll('.ex-guide-btn').forEach(btn=>{
       btn.onclick=(e)=>{e.stopPropagation();
@@ -580,12 +582,13 @@ function renderToday(){
     list.appendChild(wrap);
   });
 
+  const doneCount=(sess.exDone||[]).filter(id=>CW.exercises.includes(id)&&!(sess.exSkipped||[]).includes(id)).length;
   const skippedCount=(sess.exSkipped||[]).filter(id=>CW.exercises.includes(id)).length;
-  const eligible=CW.exercises.length; // skipped still counts against you
-  const pct=eligible>0?Math.round(sess.exDone.length/eligible*100):0;
+  const eligible=CW.exercises.length; // skipped still counts against total
+  const pct=eligible>0?Math.round(doneCount/eligible*100):0;
   document.getElementById('ex-pbar').style.width=pct+'%';
   const skipLabel=skippedCount>0?' ('+skippedCount+' skipped)':'';
-  document.getElementById('ex-count').textContent=sess.exDone.length+' / '+eligible+' exercises'+skipLabel;
+  document.getElementById('ex-count').textContent=doneCount+' / '+eligible+' exercises'+skipLabel;
 
   const btn=document.getElementById('done-btn');
   if(sess.done){btn.textContent='✓ Session completed!';btn.className='cbtn cbtn-outline';}
@@ -759,7 +762,7 @@ function renderPlan(){
         const lbl=['W1-4','W5-8','W9-16','M4+'][i];
         const val=p.sec!==undefined?p.s+'×'+p.sec+'s':p.s+'×'+p.r+' '+p.u;
         const isCur=i===Math.min(curP,ex.prog.length-1);
-        return `<span style="font-size:9px;padding:2px 5px;border-radius:10px;font-family:var(--fm);${isCur?'background:var(--g);color:#000;font-weight:700':'color:var(--tx3)'}">${lbl}: ${val}</span>`;
+        return '<span style="font-size:9px;padding:2px 5px;border-radius:10px;font-family:var(--fm);'+(isCur?'background:var(--g);color:#000;font-weight:700':'color:var(--tx3)')+'">'+(lbl+': '+val)+'</span>';
       }).join('');
       r.innerHTML=`<div style="flex:1"><div class="ppex-name">${ex.name}</div><div style="display:flex;flex-wrap:wrap;gap:3px;margin-top:4px">${pgRows}</div></div><button class="ppex-btn" data-eid="${eid}">?</button>`;
       r.querySelector('.ppex-btn').onclick=e=>{e.stopPropagation();openModal(eid);};
